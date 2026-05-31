@@ -3,163 +3,308 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⚡ 초간단 스크롤 MBTI 테스트</title>
-    <!-- Tailwind CSS (디자인을 예쁘고 트렌디하게 만들어줍니다) -->
+    <title>🌟 정밀 성격 유형 검사 (Advanced MBTI Platform)</title>
+    <!-- Tailwind CSS (현대적인 UI 구성을 위한 프레임워크) -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
-        /* 부드러운 스크롤 효과 */
         html { scroll-behavior: smooth; }
-        .gradient-bg {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
+        .bg-royal { background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%); }
+        .glass-panel { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .progress-fill { transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans antialiased">
+<body class="bg-slate-950 text-slate-100 font-sans antialiased selection:bg-indigo-500 selection:text-white">
 
-    <!-- 1. 시작 화면 (Intro) -->
-    <section id="intro-section" class="min-h-screen flex flex-col justify-center items-center text-center p-6 gradient-bg text-white">
-        <div class="max-w-md bg-white/10 backdrop-blur-md p-8 rounded-3xl shadow-2xl border border-white/20 animate-fade-in">
-            <span class="text-6xl mb-4 block animate-bounce">✨</span>
-            <h1 class="text-4xl font-extrabold mb-4 tracking-tight">나의 진짜 성향은?</h1>
-            <p class="text-lg text-purple-100 mb-8 font-light">딱 32개의 문항으로 쉽고 빠르게 알아보는 스크롤 MBTI 퀴즈!</p>
-            <button onclick="startQuiz()" class="w-full bg-white text-purple-700 font-bold py-4 px-8 rounded-2xl shadow-lg hover:bg-purple-50 transition-all transform hover:-translate-y-1 active:translate-y-0 text-xl cursor-pointer">
-                테스트 시작하기 🚀
-            </button>
+    <!-- [1] 인트로 스크린 -->
+    <section id="intro-screen" class="min-h-screen flex flex-col justify-center items-center p-6 bg-royal relative overflow-hidden">
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.15)_0%,transparent_70%)]"></div>
+        <div class="max-w-xl w-full text-center z-10 space-y-8">
+            <div class="inline-flex items-center space-x-2 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-4 py-1.5 rounded-full text-sm font-semibold tracking-wide">
+                <span>✨ 2026 정밀 심리 진단 엔진 v2.5</span>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-black tracking-tight leading-tight">
+                당신의 성향을 분석하는<br>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400">가장 정밀한 32문항 트래커</span>
+            </h1>
+            <p class="text-slate-400 text-lg max-w-md mx-auto font-light leading-relaxed">
+                단순한 가십용 테스트를 넘어, 내면의 심층 지표와 강·약점 분석, 성장 솔루션까지 포괄적인 리포트를 즉시 제공합니다.
+            </p>
+            <div class="pt-4">
+                <button onclick="startDiagnostic()" class="group relative w-full sm:w-auto inline-flex justify-center items-center space-x-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold py-4 px-12 rounded-2xl shadow-xl shadow-indigo-900/40 hover:opacity-95 transform hover:-translate-y-0.5 transition-all text-lg cursor-pointer">
+                    <span>정밀 진단 시작하기</span>
+                    <span class="group-hover:translate-x-1 transition-transform">→</span>
+                </button>
+            </div>
         </div>
     </section>
 
-    <!-- 2. 퀴즈 문항 영역 -->
-    <main id="quiz-section" class="hidden max-w-2xl mx-auto px-4 py-12 space-y-8">
-        <!-- 진행률 표시 바 -->
-        <div class="sticky top-4 bg-white/80 backdrop-blur-md p-4 rounded-2xl shadow-md border border-slate-100 z-50 flex items-center justify-between">
-            <div class="w-full bg-slate-200 rounded-full h-3.5 dark:bg-slate-700 mr-4">
-                <div id="progress-bar" class="bg-purple-600 h-3.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+    <!-- [2] 퀴즈 메인 섹션 -->
+    <main id="quiz-screen" class="hidden min-h-screen bg-slate-900 py-12 px-4 relative">
+        <div class="max-w-2xl mx-auto space-y-8">
+            
+            <!-- 상단 스티키 프로그레스 바 -->
+            <div class="sticky top-4 glass-panel p-4 rounded-2xl shadow-2xl z-50 flex items-center justify-between">
+                <div class="w-full bg-slate-800 rounded-full h-3 overflow-hidden mr-4">
+                    <div id="gauge-bar" class="progress-fill bg-gradient-to-r from-indigo-500 to-purple-500 h-full w-0"></div>
+                </div>
+                <span id="gauge-text" class="text-sm font-black text-indigo-400 min-w-[55px] text-right">0 / 32</span>
             </div>
-            <span id="progress-text" class="text-sm font-bold text-purple-700 whitespace-nowrap">0 / 32</span>
-        </div>
 
-        <!-- 32개 문항이 자바스크립트로 이곳에 동적 생성됩니다 -->
-        <div id="questions-container" class="space-y-6"></div>
+            <!-- 동적 질문 카드 컨테이너 -->
+            <div id="quiz-cards" class="space-y-6"></div>
 
-        <!-- 결과 확인 버튼 -->
-        <div class="text-center pt-8">
-            <button id="submit-btn" onclick="calculateResult()" disabled class="w-full bg-slate-300 text-slate-500 font-bold py-4 rounded-2xl text-xl cursor-not-allowed transition-all">
-                모든 질문에 답변해주세요 🔒
-            </button>
+            <!-- 리포트 생성 버튼 -->
+            <div class="pt-6">
+                <button id="calc-btn" onclick="buildAdvancedReport()" disabled class="w-full bg-slate-800 text-slate-500 font-bold py-4 rounded-2xl text-lg cursor-not-allowed transition-all border border-slate-700/50">
+                    모든 문항에 체크하면 분석서가 오픈됩니다 🔒
+                </button>
+            </div>
         </div>
     </main>
 
-    <!-- 3. 결과 화면 영역 -->
-    <section id="result-section" class="hidden min-h-screen flex flex-col justify-center items-center p-6 bg-slate-900 text-white">
-        <div class="max-w-md w-full bg-slate-800 border border-slate-700 p-8 rounded-3xl shadow-2xl text-center">
-            <span class="text-sm font-bold tracking-widest text-purple-400 uppercase">당신의 MBTI 결과는?</span>
-            <h2 id="result-mbti" class="text-6xl font-black my-4 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">ENFP</h2>
-            <div id="result-emoji" class="text-8xl my-6 animate-pulse">🎉</div>
-            <h3 id="result-title" class="text-2xl font-bold mb-4">재기발랄한 활동가</h3>
-            <p id="result-desc" class="text-slate-300 leading-relaxed mb-8">자유로운 영혼의 소유자이며, 열정적이고 창의적인 성격입니다.</p>
+    <!-- [3] 정식 심층 결과 리포트 섹션 -->
+    <section id="report-screen" class="hidden min-h-screen bg-slate-950 py-16 px-4">
+        <div class="max-w-4xl mx-auto space-y-8">
             
-            <button onclick="restartQuiz()" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-4 rounded-2xl shadow-lg hover:opacity-90 transition-all cursor-pointer">
-                다시 테스트하기 🔄
-            </button>
+            <!-- 헤더 카드 -->
+            <div class="glass-panel p-8 rounded-3xl text-center relative overflow-hidden border-indigo-500/20">
+                <div class="absolute -right-16 -top-16 w-48 h-48 bg-purple-500/10 rounded-full filter blur-3xl"></div>
+                <p class="text-xs font-bold tracking-widest text-indigo-400 uppercase mb-2">PERSONALITY ANALYSIS REPORT</p>
+                <div id="rep-emoji" class="text-7xl mb-4">🔮</div>
+                <h2 id="rep-type" class="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 tracking-tighter">ENFP</h2>
+                <h3 id="rep-title" class="text-2xl font-bold text-slate-100 mt-2">재기발랄한 활동가</h3>
+            </div>
+
+            <!-- 4대 지표 수치 스펙트럼 대시보드 -->
+            <div class="glass-panel p-8 rounded-3xl space-y-6">
+                <h4 class="text-lg font-bold text-slate-200 border-b border-slate-800 pb-3 flex items-center">
+                    <span class="mr-2">📊</span> 성향별 상세 스펙트럼 데이터
+                </h4>
+                <div class="space-y-5" id="spectrum-dashboard">
+                    <!-- JS에서 수치 바를 동적으로 계산하여 채워 넣음 -->
+                </div>
+            </div>
+
+            <!-- 핵심 특징 및 장단점 심층 그리드 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- 핵심 특징 -->
+                <div class="glass-panel p-6 rounded-2xl border-l-4 border-indigo-500">
+                    <h4 class="text-base font-bold text-indigo-400 mb-3 flex items-center">🎯 대표적인 성격 특징</h4>
+                    <p id="rep-feature" class="text-slate-300 text-sm leading-relaxed whitespace-pre-line"></p>
+                </div>
+                <!-- 보완점 -->
+                <div class="glass-panel p-6 rounded-2xl border-l-4 border-emerald-500">
+                    <h4 class="text-base font-bold text-emerald-400 mb-3 flex items-center">🌱 지속적인 성장과 보완할 점</h4>
+                    <p id="rep-growth" class="text-slate-300 text-sm leading-relaxed whitespace-pre-line"></p>
+                </div>
+                <!-- 강점 -->
+                <div class="glass-panel p-6 rounded-2xl border-l-4 border-blue-500">
+                    <h4 class="text-base font-bold text-blue-400 mb-3 flex items-center">👍 주요 강점 (Pros)</h4>
+                    <ul id="rep-pros" class="text-slate-300 text-sm space-y-2 list-disc list-inside"></ul>
+                </div>
+                <!-- 약점 -->
+                <div class="glass-panel p-6 rounded-2xl border-l-4 border-rose-500">
+                    <h4 class="text-base font-bold text-rose-400 mb-3 flex items-center">👎 주요 약점 (Cons)</h4>
+                    <ul id="rep-cons" class="text-slate-300 text-sm space-y-2 list-disc list-inside"></ul>
+                </div>
+            </div>
+
+            <!-- 리셋 푸터 -->
+            <div class="text-center pt-6">
+                <button onclick="resetPlatform()" class="bg-slate-900 border border-slate-800 hover:bg-slate-850 text-slate-400 font-semibold py-3 px-8 rounded-xl text-sm cursor-pointer transition-all">
+                    테스트 데이터 리셋 후 초기화 🔄
+                </button>
+            </div>
         </div>
     </section>
 
-    <!-- 🧠 자바스크립트 로직 -->
+    <!-- 🧠 심층 진단 로직 엔진 -->
     <script>
-        // 32개 MBTI 질문 데이터 (E/I, S/N, T/F, J/P 각 8문항씩)
-        const questions = [
-            // E vs I (1~8)
-            { id: 1, type: "EI", text: "주말에 집에 혼자 있으면 에너지가 방전된다.", a: "그렇다 (E)", b: "아니다, 충전된다 (I)" },
-            { id: 2, type: "EI", text: "새로운 사람들과 만나는 자리가 즐겁고 설렌다.", a: "즐겁다 (E)", b: "기 빨린다 (I)" },
-            { id: 3, type: "EI", text: "생각을 말로 표현하는 게 글보다 편하다.", a: "말로 하기 (E)", b: "글로 쓰기 (I)" },
-            { id: 4, type: "EI", text: "화가 나거나 슬플 때 사람들과 대화하며 푸는 편이다.", a: "대화하기 (E)", b: "혼자 삭히기 (I)" },
-            { id: 5, type: "EI", text: "단톡방에서 나는 주로 대화를 주도하는 편이다.", a: "주도파 (E)", b: "눈팅/리액션파 (I)" },
-            { id: 6, text: "여러 친구들과 왁자지껄 노는 게 더 좋다.", type: "EI", a: "단체 모임 (E)", b: "소수 정예 (I)" },
-            { id: 7, text: "처음 보는 사람에게 말을 먼저 거는 것이 어렵지 않다.", type: "EI", a: "쉬움 (E)", b: "어려움 (I)" },
-            { id: 8, text: "내 일상이나 셀카를 SNS에 공유하는 걸 좋아한다.", type: "EI", a: "좋아함 (E)", b: "부담스러움 (I)" },
+        // 32개 정밀 질문 풀 (E/I, S/N, T/F, J/P 각 8문항 균등 배정)
+        const dbQuestions = [
+            { id: 1, group: "EI", text: "모르는 사람들과 섞여 있는 네트워킹 파티나 모임에 참석하면?", a: "새로운 자극을 얻어 활력이 차오른다.", b: "충분히 즐기더라도 귀가 시 기가 방전됨을 느낀다." },
+            { id: 2, group: "EI", text: "의견 충돌이나 문제가 발생했을 때 내가 선호하는 소통 방식은?", a: "말을 통해 실시간으로 주거니 받거니 하며 푼다.", b: "생각을 문장으로 명확히 정리하여 비동기식(글 등)으로 전달한다." },
+            { id: 3, group: "EI", text: "업무나 과제를 처리할 때 나에게 더 편안한 업무 방식은?", a: "동료들과 오픈된 공간에서 수시로 협업하고 회의하기", b: "독립적인 공간에서 방해받지 않고 홀로 집중하기" },
+            { id: 4, group: "EI", text: "내 일상 속 생각이나 경험을 타인에게 개방하는 정도는?", a: "친근한 분위기라면 비교적 쉽게 오픈하고 공유한다.", b: "정말 깊게 신뢰하는 소수가 아니라면 내면을 감추는 편이다." },
+            { id: 5, group: "EI", text: "주말이나 휴일, 나에게 가장 완벽한 리프레시는?", a: "맛집 투어, 취미 모임 등 외부 활동 스케줄 잡기", b: "넷플릭스, 침대, 밀린 가사 등 집 안에서의 완전한 휴식" },
+            { id: 6, group: "EI", text: "회의나 토론 중 내가 주로 포지셔닝하는 위치는?", a: "선제적으로 발언을 던지며 아이디어를 빌드업하는 편", b: "맥락을 충분히 경청한 뒤 핵심적인 의견을 얹는 편" },
+            { id: 7, group: "EI", text: "새로운 환경이나 낯선 커뮤니티에 진입할 때 나는?", a: "비교적 빠르게 먼저 말을 걸고 사람을 사귄다.", b: "상황과 분위기를 파악할 때까지 조용히 지켜본다." },
+            { id: 8, group: "EI", text: "감정적인 스트레스가 최고조에 달했을 때 갈구하는 것은?", a: "친구들을 만나 수다를 떨거나 밖에서 활동적으로 풀기", b: "외부 자극을 차단하고 방에서 조용히 마인드컨트롤 하기" },
 
-            // S vs N (9~16)
-            { id: 9, type: "SN", text: "사과를 보면 드는 생각은?", a: "맛있겠다, 빨갛다 (S)", b: "스티브 잡스, 백설공주, 뉴턴 (N)" },
-            { id: 10, type: "SN", text: "영화를 볼 때 나는 주로 어느 것에 집중하는가?", a: "화려한 액션과 영상미 (S)", b: "숨겨진 복선과 세계관 (N)" },
-            { id: 11, type: "SN", text: "노래를 들을 때 더 먼저 꽂히는 것은?", a: "신나는 멜로디와 비트 (S)", b: "마음을 울리는 가사 (N)" },
-            { id: 12, type: "SN", text: "만약 '내가 내일 로또에 당첨된다면?' 이라는 상상을 자주 하나요?", a: "현실적인 계획만 세움 (S)", b: "이미 건물 몇 채 샀음 (N)" },
-            { id: 13, type: "SN", text: "설명서를 읽을 때 나는?", a: "처음부터 꼼꼼히 정독 (S)", b: "대충 직관적으로 조립 시작 (N)" },
-            { id: 14, type: "SN", text: "이야기를 할 때 나는 어떤 편인가요?", a: "사실 위주로 정확하게 (S)", b: "비유와 은유를 섞어서 (N)" },
-            { id: 15, type: "SN", text: "멍 때릴 때 내 머릿속은?", a: "진짜 아무 생각 없음 (S)", b: "끝없는 꼬리물기 상상 중 (N)" },
-            { id: 16, type: "SN", text: "미래의 일보다 지금 현재 눈앞의 일이 더 중요하다.", a: "현재 충실 (S)", b: "미래 대비 (N)" },
+            { id: 9, group: "SN", text: "어떤 대상을 관찰하거나 분석할 때 나의 기본적인 초점은?", a: "눈앞에 보이는 명확한 데이터, 사실 정보, 현재 상황", b: "그 이면에 숨겨진 맥락, 가능성, 미래에 미칠 연쇄적 영향" },
+            { id: 10, group: "SN", text: "새로운 프로젝트 지침서를 받았을 때 더 안도감이 드는 양식은?", a: "단계별 매뉴얼과 예시가 명확히 명시된 양식", b: "목적만 뚜렷하고 세부 실행 방식은 자율에 맡겨진 개방형 양식" },
+            { id: 11, group: "SN", text: "소설이나 웰메이드 영화를 볼 때 내가 더 흥미를 느끼는 부분은?", a: "치밀하게 묘사된 현실 고증과 시각적 타격감", b: "인간 심리에 대한 은유와 다각도로 해석 가능한 열린 결말" },
+            { id: 12, group: "SN", text: "어떤 문제를 해결해야 할 때 나는 보통 어떤 방식을 선택하나요?", a: "기존에 성공 사례가 검증된 효율적이고 익숙한 방식", b: "비록 리스크가 있더라도 시도해보지 않은 파격적인 방식" },
+            { id: 13, group: "SN", text: "누군가 나에게 신제품 아이디어를 설명할 때 내 머릿속 반응은?", a: "제작 비용은 얼마인지, 진짜 실현 가능한 비즈니스 모델인지 계산", b: "그 제품이 바꿀 인류의 라이프스타일이나 확장성에 대한 상상" },
+            { id: 14, group: "SN", text: "평소 '생각이 꼬리를 문다'고 할 때 그 생각의 결은?", a: "오늘 처리했어야 하는 일, 내일 챙겨야 할 현실적 체크리스트", b: "인간의 본질, 우주의 끝, 먼 미래의 가상 시나리오 같은 추상적 관념" },
+            { id: 15, group: "SN", text: "비유나 추상적인 단어가 가득한 대화를 나눌 때 나는?", a: "핵심 요점이 뭔지 돌려 말하지 말고 직설적으로 말해줬으면 함", b: "행간을 읽는 재미가 있으며 대화가 다채롭고 즐겁게 느껴짐" },
+            { id: 16, group: "SN", text: "현재 나의 삶을 관통하는 더 가치 있는 태도는?", a: "지금 발을 딛고 있는 현실에 충실하며 디테일을 챙기기", b: "원대한 미래 비전을 꿈꾸며 삶의 큰 방향성을 설계하기" },
 
-            // T vs F (17~24)
-            { id: 17, type: "TF", text: "친구가 '나 슬퍼서 빵 샀어'라고 했을 때 내 반응은?", a: "무슨 빵 샀는데? 왜 슬퍼? (T)", b: "왜 슬펐어 ㅠㅠ 괜찮아? (F)" },
-            { id: 18, type: "TF", text: "친구가 고민을 털어놓을 때 내가 먼저 하는 행동은?", a: "현실적인 해결책 제시 (T)", b: "적극적인 감정 공감 (F)" },
-            { id: 19, type: "TF", text: "상처를 더 크게 받는 말은 어떤 쪽인가요?", a: "너 일을 왜 그렇게 해? (능력 비판) (T)", b: "너랑은 말이 안 통해 (관계 비판) (F)" },
-            { id: 20, type: "TF", text: "영화나 드라마를 보면서 눈물을 자주 흘리나요?", a: "거의 안 흘림 감정이입 안 됨 (T)", b: "툭하면 폭풍 눈물 (F)" },
-            { id: 21, type: "TF", text: "타인의 부탁을 거절할 때 내 마음은?", a: "안 되면 안 되는 거지, 단호함 (T)", b: "거절하고 나서 계속 신경 쓰임 (F)" },
-            { id: 22, type: "TF", text: "칭찬을 들을 때 더 기분 좋은 말은?", a: "너 진짜 똑똑하다, 일 잘한다 (T)", b: "너랑 있으면 마음이 편해져 (F)" },
-            { id: 23, type: "TF", text: "조별 과제 잔혹사! 참여 안 하는 조원을 만났을 때?", a: "단호하게 이름 빼고 교수님께 찌름 (T)", b: "마음 쓰이지만 좋게 말해봄 (F)" },
-            { id: 24, type: "TF", text: "논쟁이 생겼을 때 나는?", a: "시시비비를 가려 이겨야 함 (T)", b: "갈등이 생기는 것 자체가 불편함 (F)" },
+            { id: 17, group: "TF", text: "친한 동료가 열심히 준비한 프로젝트에서 처참한 피드백을 받고 낙담해 있다면?", a: "실패 원인을 객관적으로 분석해주고 현실적 극복 대안을 제안한다.", b: "그동안 고생한 노력을 격려하고 속상한 마음에 진심으로 공감해준다." },
+            { id: 18, group: "TF", text: "비즈니스나 공적인 의사결정을 내릴 때 가장 우선시되어야 하는 기준은?", a: "철저한 데이터, 규칙의 공정성, 조직적 손익 계산", b: "구성원들의 심리적 만족도, 가치관의 부합 여부, 휴머니즘" },
+            { id: 19, group: "TF", text: "대화나 토론 도중 타인에게 피드백을 전달할 때 나의 스타일은?", a: "빠른 개선을 위해 왜곡 없이 핵심적인 팩트를 직설적으로 찌른다.", b: "상대방이 무안하거나 상처받지 않도록 쿠션어와 우회적 표현을 쓴다." },
+            { id: 20, group: "TF", text: "나에게 '공정함(Fairness)'이란 단어가 주는 진정한 의미는?", a: "예외 없이 동일한 규칙과 기준을 엄격하게 적용하는 것", b: "개인별 처해 있는 상황과 역량을 감안하여 유연하게 배려하는 것" },
+            { id: 21, group: "TF", text: "타인과 치열한 논쟁을 벌인 직후, 내 마음에 남는 앙금은?", a: "토론은 토론일 뿐, 감정 상할 이유가 전혀 없다.", b: "논리가 맞더라도 관계가 껄끄러워진 것 같아 밤새 신경 쓰인다." },
+            { id: 22, group: "TF", text: "내가 상대로부터 들었을 때 영혼 깊이 감동하는 최고의 찬사는?", a: "“당신은 진짜 일 처리가 완벽하고 스마트한 전문가군요.”", b: "“당신 덕분에 무너졌던 제 마음이 치유되었고 살 힘을 얻었어요.”" },
+            { id: 23, group: "TF", text: "누군가 고집스럽게 잘못된 논리로 행동하여 손해를 자초하는 것을 볼 때?", a: "냉정하게 그 행동이 틀렸음을 인과관계로 지적해준다.", b: "나름의 사정이 있겠거니 생각하며 일단 기분을 맞춰준다." },
+            { id: 24, group: "TF", text: "동료의 업무 실수를 발견했을 때 머릿속에 먼저 드는 생각은?", a: "이 실수가 미칠 비즈니스적 파장과 백업 프로세스 세우기", b: "이 실수로 인해 동료가 겪을 자괴감과 패닉 상태 걱정하기" },
 
-            // J vs P (25~32)
-            { id: 25, type: "JP", text: "여행을 갈 때 나의 계획표 상태는?", a: "몇 시에 어디 갈지 분 단위로 짬 (J)", b: "비행기 표랑 숙소만 있으면 끝 (P)" },
-            { id: 26, type: "JP", text: "갑작스러운 약속이나 스케줄 변경이 생긴다면?", a: "계획이 꼬여서 스트레스 받음 (J)", b: "오히려 좋아! 번개 환영 (P)" },
-            { id: 27, type: "JP", text: "과제나 업무를 처리할 때 내 스타일은?", a: "미리미리 계획 세워서 여유 있게 (J)", b: "마감 직전 초인적인 벼락치기 (P)" },
-            { id: 28, type: "JP", text: "내 방이나 책상 위 물건들의 정돈 상태는?", a: "항상 제자리에 정돈되어 있음 (J)", b: "지저분해 보이지만 나만의 규칙이 있음 (P)" },
-            { id: 29, type: "JP", text: "하루 일과를 시작하기 전 리스트를 작성하나요?", a: "To-Do 리스트 필수 (J)", b: "머릿속으로 대충 생각하거나 안 함 (P)" },
-            { id: 30, type: "JP", text: "음식점에 갈 때 나는 주로?", a: "미리 맛집 웨이팅, 메뉴 정보 다 찾아둠 (J)", b: "지나가다 느낌 오는 곳으로 들어감 (P)" },
-            { id: 31, type: "JP", text: "약속 시간에 늦는 사람을 보면 드는 생각은?", a: "시간 약속은 기본인데 기본이 안 됐군 (J)", b: "차가 막혔나 보지 그럴 수 있지 (P)" },
-            { id: 32, type: "JP", text: "준비가 완벽하게 되지 않은 상태에서 무언가를 시작하면 불안하다.", a: "매우 불안함 (J)", b: "부딪히면서 배우는 거지 (P)" }
+            { id: 25, group: "JP", text: "일주일간의 장기 해외여행을 가기 직전, 내 가방과 계획표는?", a: "일자별 동선과 필수 소지품이 엑셀이나 노트에 구조화되어 있다.", b: "꼭 필요한 여권, 지갑만 챙기고 나머지는 현지에서 유동적으로 맞춘다." },
+            { id: 26, group: "JP", text: "주말 아침, 정해진 스케줄이 없을 때 나의 하루 행동 양식은?", a: "기상 후 시간대별로 할 일(청소, 독서, 운동 등)의 가이드라인을 세운다.", b: "그때그때 기분과 컨디션의 흐름에 몸을 맡기며 즉흥적으로 행동한다." },
+            { id: 27, group: "JP", text: "마감 시한이 정해진 중요한 보고서나 과제를 넘겨야 할 때 나의 패턴은?", a: "매일 일정 분량을 쪼개어 마감 2~3일 전에 안정적으로 끝낸다.", b: "미루고 미루다 마감 직전 벼락치기 스퍼트로 한 번에 끝낸다." },
+            { id: 28, group: "JP", text: "갑작스럽게 당일 저녁 번개 모임 제안이 들어온다면 나의 심리는?", a: "이미 짜둔 나의 루틴이나 휴식 계획이 침해받아 다소 불편하다.", b: "스릴 있고 오히려 좋아! 특별한 거절 사유가 없다면 바로 합류한다." },
+            { id: 29, group: "JP", text: "내 컴퓨터 바탕화면이나 집 안 가구 배치, 수납함 정리 스타일은?", a: "카테고리별 폴더 구조나 위치가 칼같이 라벨링되어 정돈된 상태", b: "겉보기엔 무질서해 보이지만 나만 아는 직관적인 위치에 흩어진 상태" },
+            { id: 30, group: "JP", text: "목표를 달성하는 과정에서 더 큰 효율이 난다고 믿는 방식은?", a: "변수를 통제할 수 있도록 치밀하게 짜인 시스템 안에서 움직이기", b: "상황 변화에 따라 유연하고 민첩하게 궤도를 수정하며 기동하기" },
+            { id: 31, group: "JP", text: "미팅이나 약속 조율 시 내가 선호하는 타임라인 설정은?", a: "정확히 몇 시 몇 분, 어느 장소인지 명확히 픽스하기", b: "“토요일 오후쯤 강남역 근처에서 대충 만나서 정하자” 식의 오픈 타임" },
+            { id: 32, group: "JP", text: "예상치 못한 천재지변이나 상황 변수로 기존 계획이 전면 무산되었을 때?", a: "대안(Plan B)이 없으면 극심한 멘붕과 스트레스에 시달린다.", b: "인생이 다 그런 거지 하며 아무렇지 않게 상황에 맞춰 재밌게 논다." }
         ];
 
-        // MBTI 결과 매핑 데이터 (이모지와 타이틀)
-        const mbtiResults = {
-            ISTJ: { emoji: "💼", title: "청렴결백한 논리주의자", desc: "매우 현실적이고 철두철미하며, 맡은 바 책임을 다하는 꼼꼼한 성격입니다." },
-            ISFJ: { emoji: "🛡️", title: "용감한 수호자", desc: "주변 사람들을 따뜻하게 보살피고 헌신하며, 의리가 넘치는 성격입니다." },
-            INFJ: { emoji: "🔮", title: "선의의 옹호자", desc: "이상주의적이고 신비로우며, 타인에게 영감을 주는 깊은 통찰력을 가졌습니다." },
-            INTJ: { emoji: "🧠", title: "용의주도한 전략가", desc: "상상력이 풍부하면서도 결단력이 있으며, 야망 있는 독립적인 사색가입니다." },
-            ISTP: { emoji: "🛠️", title: "만능 재주꾼", desc: "냉철한 이성과 왕성한 호기심을 바탕으로 무언가를 탐구하고 만드는 걸 좋아합니다." },
-            ISFP: { emoji: "🎨", title: "호기심 많은 예술가", desc: "항상 새로운 것을 찾아 도전하는 열정적이고 온화한 예술가 타입입니다." },
-            INFP: { emoji: "🦄", title: "열정적인 중재자", desc: "최악의 상황에서도 긍정적인 면을 찾는, 상냥하고 이타적인 낭만주의자입니다." },
-            INTP: { emoji: "🧪", title: "논리적인 사색가", desc: "끊임없이 새로운 지식을 갈구하며, 독창성과 아이디어가 넘치는 탐구가입니다." },
-            ESTP: { emoji: "🏍️", title: "수완 좋은 활동가", desc: "직관과 스릴을 즐기며, 당당하고 위트 있게 문제를 해결하는 에너자이저입니다." },
-            ESFP: { emoji: "🎉", title: "자유로운 영혼의 연예인", desc: "주변에 사람이 끊이지 않으며, 인생을 즐겁고 활기차게 살아가는 분위기 메이커입니다." },
-            ENFP: { emoji: "🎈", title: "재기발랄한 활동가", desc: "자유로운 영혼의 소유자이며, 열정적이고 창의적인 성격으로 늘 웃음을 줍니다." },
-            ENTP: { emoji: "🔥", title: "뜨거운 논쟁을 즐기는 변론가", desc: "지적인 도전을 두려워하지 않으며, 늘 새로운 아이디어를 제시하는 브레인입니다." },
-            ESTJ: { emoji: "📐", title: "엄격한 관리자", desc: "사물과 사람을 조직하고 관리하는 데 타의 추종을 불허하는 뛰어난 리더입니다." },
-            ESFJ: { emoji: "🤝", title: "사교적인 외교관", desc: "타인을 돕는 일에 적극적이며, 인기가 많고 사교성이 매우 좋은 따뜻한 성격입니다." },
-            ENFJ: { emoji: "🗣️", title: "정의로운 천생 리더", desc: "카리스마와 열정을 지닌 리더로, 청중을 사로잡고 타인을 긍정적인 길로 인도합니다." },
-            ENTJ: { emoji: "👑", title: "대담한 통솔자", desc: "대담하고 상상력이 풍부하며, 강한 의지로 목표를 성취해 내는 타고난 리더입니다." }
+        // 16개 성격 유형별 심층 분석 마스터 백과사전 데이터
+        const masterDatabase = {
+            ISTJ: {
+                emoji: "💼", title: "청렴결백한 전통 수호자",
+                feature: "철저한 현실 감각과 책임감을 바탕으로 조직의 뼈대를 지탱하는 기둥입니다. 규정이나 약속을 목숨처럼 아끼며, 한 번 시작한 일은 끝까지 완수해 내는 높은 신뢰도를 자랑합니다.",
+                pros: ["놀라운 집중력과 정교한 디테일 관리 능력", "약속과 기한을 칼같이 지키는 강력한 책임감", "위기 상황에서도 감정에 휘둘리지 않는 냉철한 이성"],
+                cons: ["기존 관습에 얽매여 변화나 패러다임 전환에 취약함", "타인의 감정적 호소나 뉘앙스를 파악하는 공감력 부족", "자신만의 엄격한 잣대를 타인에게도 투사하려는 경향"],
+                growth: "세상에는 정답이 아닌 '다양한 대안'이 존재함을 인정해야 합니다. 가끔은 비효율적으로 보이는 타인의 감정 교류도 조직 유지에 필수적임을 인지하고 따뜻한 말 한마디를 건네는 연습이 필요합니다."
+            },
+            ISFJ: {
+                emoji: "🛡️", title: "헌신적이고 따뜻한 방패 수호자",
+                feature: "타인의 필요를 귀신같이 알아채고 소리 없이 뒤에서 보살피는 진정한 서포터입니다. 기억력이 매우 뛰어나 주변 사람들의 사소한 취향이나 기념일을 꼼꼼히 챙기는 따뜻함을 가졌습니다.",
+                pros: ["깊은 배려심과 이타주의적 태도", "세밀하고 실용적인 업무 처리 역량", "공동체의 평화와 안정을 유지하는 훌륭한 중재 능력"],
+                cons: ["상처받기 두려워 거절을 못 하고 독박 업무를 자초함", "부정적 피드백이나 비판에 지나치게 심약해짐", "변화나 이직 등 새로운 환경에 대한 스트레스 수치가 과도함"],
+                growth: "타인을 돌보기 전에 '자기 자신에 대한 경계선'을 먼저 세워야 합니다. 싫은 것은 당당하게 거절하는 단호함을 기르고, 스스로의 가치를 타인의 인정에서만 찾지 않도록 마인드셋을 강화하세요."
+            },
+            INFJ: {
+                emoji: "🔮", title: "통찰력 있는 이상주의 예언가",
+                feature: "전 세계 인구 중 가장 희귀한 유형으로, 인간 내면의 복잡한 본질을 꿰뚫어 보는 탁월한 영적 통찰력을 지녔습니다. 거대한 이상과 도덕적 신념을 실현하기 위해 조용히 움직이는 혁명가적 결을 가집니다.",
+                pros: ["타인의 동기를 파악하는 깊은 공감력과 직관", "확고하고 높은 수준의 도덕성과 인본주의 비전", "목적 달성을 위해 계획을 끝까지 밀어붙이는 끈기"],
+                cons: ["본인의 복잡한 속내를 드러내지 않아 신비주의 오해를 받음", "현실성 없는 이상에 매몰되어 번아웃에 자주 노출됨", "자신의 신념과 다른 타인의 가치관을 마음속으로 쉽게 재단함"],
+                growth: "이상향의 기준을 조금 낮추고 현생의 사소한 즐거움에 발을 붙여야 합니다. 모든 인류를 구원할 수 없음을 인정하고, 자신의 완벽주의 성향이 스스로를 갉아먹지 않도록 심리적 브레이크를 걸어주세요."
+            },
+            INTJ: {
+                emoji: "🧠", title: "시스템을 설계하는 전략가",
+                feature: "거대한 체스판을 보듯 세상을 조망하며 10수 앞을 내다보는 냉철한 설계자입니다. 지적 호기심이 끝이 없으며 비효율과 불합리함을 보면 이를 완전히 뜯어고쳐야 직성이 풀리는 철두철미한 개혁가입니다.",
+                pros: ["비전과 디테일을 융합하는 강력한 장기 전략 수립력", "타인의 시선에 아랑곳하지 않는 독립적이고 높은 자존감", "방대한 지식을 체계화하는 논리적 분석력"],
+                cons: ["지나치게 비판적이고 오만해 보일 수 있는 커뮤니케이션 스타일", "감정 영역을 불필요한 군더더기로 치부하는 경향", "지나치게 높은 기준으로 주변 사람들을 피로하게 만듦"],
+                growth: "논리적으로 완벽한 해결책이 항상 인간 관계를 해결해주지는 않습니다. '맞는 말'을 '차갑게' 하기보다는 상대방의 감정 상태를 먼저 수용한 뒤 논리를 전개하는 부드러운 화법을 탑재해야 성공 가능성이 배가됩니다."
+            },
+            ISTP: {
+                emoji: "🛠️", title: "상황을 분석하는 만능 해결사",
+                feature: "에너지를 효율적으로 아끼다가 위기 상황이 터지면 고도의 집중력으로 문제를 즉각 해결하는 과묵한 실천가입니다. 기계, 도구, 데이터 등 물리적 세상을 제어하는 기술이 탁월합니다.",
+                pros: ["위기 속에서도 공황에 빠지지 않는 최고의 평정심", "극도의 실용주의 기반 가성비 최적화 능력", "새로운 도구나 시스템에 대한 빠른 적응력"],
+                cons: ["인간관계에서 오는 감정적 소모를 극도로 혐오하고 방관함", "지나친 마이웨이 성향으로 팀워크 규칙을 무시할 때가 있음", "쉽게 지루함을 느끼고 장기 프로젝트 후반부에 집중력 저하"],
+                growth: "사전 소통 없이 갑자기 혼자 결론을 내리고 잠수 타거나 행동하는 습관은 팀원들을 당황하게 만듭니다. 당신의 관찰 결과를 주변에 미리 말로 공유해주는 최소한의 친절함이 필요합니다."
+            },
+            ISFP: {
+                emoji: "🎨", title: "현재를 음미하는 서정적 예술가",
+                feature: "말없이 온화하며 삶의 아름다운 순간과 미적 가치를 온전히 음미할 줄 아는 유유자적한 영혼입니다. 경쟁을 기피하며 모든 사람이 각자의 속도대로 자유롭게 살아가기를 내심 소망합니다.",
+                pros: ["뛰어난 심미안과 시각적·감각적 감수성", "타인의 개성을 조건 없이 인정하는 열린 포용력", "갈등을 유발하지 않는 온화하고 겸손한 태도"],
+                cons: ["장기적인 목표 설정이나 미래 대비 실행력 부족", "구속이나 마감 압박이 오면 무력하게 무너짐", "비판을 들으면 논박하지 못하고 동굴 속으로 잠적함"],
+                growth: "흘러가는 대로 사는 삶도 아름답지만, 인생의 중요한 터닝포인트에서는 계획과 결단력이 힘을 발휘합니다. 가끔은 거절당하거나 논쟁하는 것을 두려워하지 말고 자신의 권리를 강하게 주장해보세요."
+            },
+            INFP: {
+                emoji: "🦄", title: "가치를 추구하는 방랑 시인",
+                feature: "자신만의 고결한 내면세계와 가치관을 온전히 지키며 살아가는 잔잔한 호수 같은 사람입니다. 인간의 고통에 대한 공감 스펙트럼이 가장 넓으며, 진정성(Authenticity)을 삶의 최우선 가치로 삼습니다.",
+                pros: ["타의 추종을 불허하는 독창적인 창의력과 상상력", "소외된 이들을 진심으로 안아주는 깊은 연민과 휴머니즘", "도덕적 신념을 수호하는 조용한 강단"],
+                cons: ["이상과 현실의 괴리로 인한 주기적인 우울감과 무기력증", "객관적인 비판도 자신에 대한 거부로 받아들이는 과도한 이입", "돈, 계약, 정산 등 지나치게 현실적인 행정 업무 기피"],
+                growth: "현실 세계의 한계와 인간의 불완전함을 있는 그대로 수용하는 의연함이 필요합니다. 머릿속의 위대한 상상들을 생각으로만 끝내지 말고, 아주 작은 실행 단위로 쪼개어 세상 밖으로 출력하는 훈련이 절실합니다."
+            },
+            INTP: {
+                emoji: "🧪", title: "진리를 탐구하는 고독한 사색가",
+                feature: "세상의 모든 현상을 해체하고 분석하여 본질적인 원리를 규명해 내는 지적 사냥꾼입니다. 감정적 미사여구를 걷어낸 완전무결한 논리 체계를 구축할 때 가장 큰 희열을 느낍니다.",
+                pros: ["기발하고 독창적인 문제를 해결하는 고도의 추론 능력", "편견이나 선입견에 매몰되지 않는 극도의 객관성", "복잡한 개념을 단숨에 관통하는 통찰력"],
+                cons: ["사회적 룰이나 감정적 예의범절을 다소 귀찮고 불필요하게 여김", "설계만 완벽하게 해두고 실제 구현이나 마무리 단계는 방치함", "타인의 평범한 의견을 논리적으로 난도질하여 상처를 줌"],
+                growth: "당신에게는 오류로 가득 차 보이는 타인의 '감정' 역시 인간 행동을 지배하는 엄연한 '팩트'이자 데이터입니다. 상대방의 논리가 빈약하더라도 지적질을 멈추고 감정을 먼저 수용해 주는 사회적 스킬을 훈련하세요."
+            },
+            ESTP: {
+                emoji: "🏍️", title: "위기를 즐기는 실전형 야생마",
+                feature: "탁상공론을 혐오하며 온몸으로 부딪히며 기회를 포착하는 타고난 승부사입니다. 유머 감각이 뛰어나고 현실 감각이 매우 발달하여 어떤 돌발 상황이 와도 즉흥적인 순발력으로 판을 뒤집습니다.",
+                pros: ["압도적인 실행력과 리스크를 두려워하지 않는 대담함", "사람들의 긴장을 단숨에 풀어버리는 뛰어난 사교성과 위트", "직관적이고 실용적인 문제 해결 스피드"],
+                cons: ["장기적인 여파를 고려하지 않는 충동적 의사결정", "반복적인 행정 업무나 규율에 갇히면 극심한 반발심 표출", "타인의 섬세한 감정선을 거칠게 밟고 지나가는 경향"],
+                growth: "속도감 있는 실행은 최고의 무기이지만, 때로는 한 걸음 물러서서 내 행동이 가져올 2차, 3차 도미노 효과를 숙고해야 합니다. 충동이 일어날 때 3초만 호흡을 가다듬는 브레이크가 필요합니다."
+            },
+            ESFP: {
+                emoji: "🎉", title: "인생을 축제로 만드는 슈퍼스타",
+                feature: "존재 자체만으로 어두운 분위기를 환하게 바꾸는 긍정의 아이콘입니다. 지금 이 순간의 오감과 즐거움을 극대화하는 천부적인 능력이 있으며 사람들과 어울려 에너지를 발산할 때 가장 빛납니다.",
+                pros: ["모두를 무장해제시키는 독보적인 친화력과 매력", "현실의 트렌드와 미적 변화를 빠르게 캐치하는 감각", "팀의 사기를 하늘 끝까지 끌어올리는 긍정 에너지"],
+                cons: ["진지한 갈등이나 무거운 대화를 회피하려는 성향", "즉흥적인 소비나 쾌락적 충동에 취약함", "혼자 있는 시간을 견디지 못하고 외로움을 과하게 탐"],
+                growth: "삶에는 파티뿐만 아니라 고요한 성찰과 지루한 인내의 시간도 필요합니다. 문제가 생겼을 때 웃음으로 대충 넘기려 하지 말고, 정면으로 마주해 매듭을 짓는 진중함을 연습해보세요."
+            },
+            ENFP: {
+                emoji: "🎈", title: "영감을 전파하는 활동가",
+                feature: "끝없는 호기심과 열정으로 무장하여 주변 사람들에게 끊임없이 아이디어와 동기를 부여하는 에너자이저입니다. 사람 대 사람의 진정성 있는 연결을 갈망하며 자유로운 영혼을 대변합니다.",
+                pros: ["상상력이 풍부하고 사람의 장점을 발굴하는 능력이 탁월함", "유연하고 개방적인 사고방식과 뛰어난 커뮤니케이션 능력", "위기를 기회로 바꾸는 긍정적 프레이밍 역량"],
+                cons: ["아이디어만 벌려놓고 마무리를 짓지 못하는 고질적인 뒷심 부족", "사소한 거절이나 비판에 속으로 엄청난 상처를 받음", "단순 반복적인 일상 업무에 극심한 지루함과 무력감을 느낌"],
+                growth: "시작하는 열정만큼 중요한 것이 바로 '끝맺음의 예술'입니다. 하고 싶은 새로운 일이 생기더라도 현재 진행 중인 프로젝트를 최소 80% 이상 완성해두고 이동하는 시스템적인 통제력을 스스로 부여해야 대성합니다."
+            },
+            ENTP: {
+                emoji: "🔥", title: "고정관념을 깨부수는 혁신 변론가",
+                feature: "“왜 안 돼?”를 입에 달고 살며 기존의 패러다임과 권위에 도전하는 타고난 브레인스토머입니다. 지적인 대결과 토론 그 자체를 즐기며 변칙적이고 기발한 방식으로 세상을 자극합니다.",
+                pros: ["두뇌 회전이 압도적으로 빠르며 다각도의 아이디어 뱅크 역할", "어떤 고난이 와도 우회로를 뚫어내는 뛰어난 임기응변", "위계질서에 굴하지 않는 당당함과 추진력"],
+                cons: ["상대방의 논리적 허점을 무자비하게 후벼 파 아군을 잃기 쉬움", "세부 디테일 실행이나 일상적인 관리 영역을 극도로 기피함", "말만 앞서고 행동이 따르지 않는 '프로 말꾼'으로 오해받음"],
+                growth: "토론에서 이기는 것보다 중요한 것은 '사람의 마음을 얻는 것'입니다. 상대의 주장이 허술하더라도 면박을 주기보단 체면을 살려주며 내 주장을 관철하는 세련된 정치가적 화법을 수용해보세요."
+            },
+            ESTJ: {
+                emoji: "📐", title: "사회를 조직하는 총사령관",
+                feature: "혼돈 속에서 질서를 부여하고 공고한 시스템을 구축하는 타고난 리더이자 관리자입니다. 현실적인 실행력과 명확한 가이드라인을 바탕으로 거대한 프로젝트를 한 치의 오차 없이 통솔합니다.",
+                pros: ["탁월한 조직 운영 능력과 확실한 리더십", "공정하고 투명한 성과 평가와 행정력", "혼란 속에서도 방향타를 잡는 결단력"],
+                cons: ["지나치게 경직된 사고 체계로 유연한 예외를 인정하지 않음", "과정보다 결과 수치만 중시하여 구성원을 도구화함", "자신의 방식을 고집하여 꼰대라는 비판에 직면하기 쉬움"],
+                growth: "효율성만이 인생의 정답은 아닙니다. 때로는 속도가 느리더라도 구성원들의 마음의 소리를 경청하고, 비논리적인 감정 낙오자들까지 포용해 함께 걸어갈 때 진정한 위대한 리더로 완성됩니다."
+            },
+            ESFJ: {
+                emoji: "🤝", title: "공동체를 결속시키는 친화형 외교관",
+                feature: "타인의 경조사를 1순위로 챙기며 조직의 화합과 끈끈한 결속력을 만들어내는 사회적 접착제입니다. 예의바르고 친절하며 조화로운 인간관계를 유지하기 위해 엄청난 에너지를 쏟아붓습니다.",
+                pros: ["주변 사람들을 내 가족처럼 챙기는 압도적인 다정함과 친화력", "커뮤니티의 전통과 가치를 계승하는 안정적 관리 능력", "성실하고 협조적인 최고의 팀플레이어 성향"],
+                cons: ["타인의 평가와 평판에 지나치게 안테나를 세워 쉽게 피로해짐", "갈등을 직면하지 못하고 좋은 게 좋은 거라며 덮어두려 함", "자신의 친절이 거부당했을 때 오는 배신감과 서운함 조절 장애"],
+                growth: "모두에게 좋은 사람일 수는 없습니다. 타인의 싸늘한 반응에 지나치게 의미 부여를 하지 말고 심리적 거리를 두는 연습을 하세요. 갈등을 건강하게 직면하는 것 또한 관계 발전에 도움이 됨을 알아야 합니다."
+            },
+            ENFJ: {
+                emoji: "🗣️", title: "인류를 이끄는 정의로운 메시아 리더",
+                feature: "타인의 잠재력을 귀신같이 알아채고 동기를 부여하여 더 나은 세상으로 사람들을 이끄는 카리스마 넘치는 교사형 리더입니다. 높은 이상향과 리더십을 동시에 갖추어 대중을 매료시킵니다.",
+                pros: ["듣는 이를 매료시키는 흡입력 있는 웅변과 표현력", "진심 어린 이타주의와 타인의 성장을 돕는 헌신적 리더십", "조직의 비전을 명확히 제시하는 능력"],
+                cons: ["타인의 문제를 내 문제처럼 안고 가다가 과도한 심리적 동화 및 번아웃", "지나치게 이상주의적이라 현실적인 한계 벽에 부딪히면 크게 좌절", "상대를 과도하게 이상화했다가 실망하는 악순환"],
+                growth: "타인의 성장 궤도에 지나치게 개입하여 무거운 책임감을 짊어질 필요는 없습니다. 그들의 성장은 그들의 몫으로 남겨두고, 본인의 내면적 평화와 현실적 한계를 수용하는 영리한 선을 그으세요."
+            },
+            ENTJ: {
+                emoji: "👑", title: "판을 짜고 승리하는 대담한 통치자",
+                feature: "장기적인 비전을 현실의 정교한 전략으로 치환하여 조직을 승리로 이끄는 타고난 CEO형 인재입니다. 어려운 난관이 닥칠수록 투지가 불타오르며 철저한 성과주의와 카리스마로 무장하고 있습니다.",
+                pros: ["도전을 즐기는 강력한 진취성과 강철 같은 의지력", "거시적 안목과 디테일한 실행 로드맵을 융합하는 지적 역량", "철저한 성과 중심의 군더더기 없는 일 처리"],
+                cons: ["능력이 다소 부족한 팀원을 몰아붙이거나 쉽게 무시하는 냉혹함", "강한 지배욕으로 주변 사람들의 의견을 독단적으로 짓누름", "자신의 약점이나 감정적 취약성을 절대 인정하지 않으려 함"],
+                growth: "“빨리 가려면 혼자 가고, 멀리 가려면 함께 가라”라는 격언을 되새겨야 합니다. 가끔은 채찍질을 멈추고 팀원들의 지친 페이스를 살피며, 자신의 불완전함과 취약성도 솔직하게 인정할 때 부하 직원들이 진심으로 충성하게 됩니다."
+            }
         };
 
-        const answers = {};
+        const currentAnswers = {};
 
-        // 퀴즈 시작 함수
-        function startQuiz() {
-            document.getElementById('intro-section').classList.add('hidden');
-            document.getElementById('quiz-section').classList.remove('hidden');
-            renderQuestions();
+        // 퀴즈 기동 함수
+        function startDiagnostic() {
+            document.getElementById('intro-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            buildQuestionsUI();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // 질문 카드 동적 화면 렌더링
-        function renderQuestions() {
-            const container = document.getElementById('questions-container');
+        // 32개 정밀 질문 카드 UI 렌더링
+        function buildQuestionsUI() {
+            const container = document.getElementById('quiz-cards');
             container.innerHTML = '';
 
-            questions.forEach((q, index) => {
+            dbQuestions.forEach((q, idx) => {
                 const card = document.createElement('div');
-                card.id = `q-card-${q.id}`;
-                // 세련된 카드 스타일
-                card.className = "bg-white p-6 rounded-2xl shadow-sm border border-slate-100 transition-all duration-300";
-                
+                card.id = `q-block-${q.id}`;
+                card.className = "bg-slate-900 border border-slate-800/80 p-6 rounded-2xl shadow-xl transition-all duration-300";
+
                 card.innerHTML = `
-                    <div class="flex items-center space-x-2 mb-4">
-                        <span class="bg-purple-100 text-purple-700 text-xs font-bold px-2.5 py-1 rounded-full">Q ${q.id}</span>
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-xs font-black tracking-wider text-indigo-400 uppercase bg-indigo-950/60 border border-indigo-900 px-3 py-1 rounded-md">Diagnostic Q-${String(q.id).padStart(2, '0')}</span>
                     </div>
-                    <p class="text-lg font-bold text-slate-800 mb-6">${q.text}</p>
-                    <div class="space-y-3">
-                        <button id="btn-${q.id}-a" onclick="selectAnswer(${q.id}, 'A', '${q.type}', ${index})" class="w-full text-left p-4 rounded-xl border-2 border-slate-100 hover:border-purple-200 hover:bg-purple-50/50 transition-all font-medium text-slate-700 cursor-pointer">
+                    <h3 class="text-lg font-bold text-slate-100 leading-snug mb-5">${q.text}</h3>
+                    <div class="grid grid-cols-1 gap-3">
+                        <button id="opt-${q.id}-a" onclick="handleSelect(${q.id}, 'A', '${q.group}')" class="w-full text-left p-4 rounded-xl border border-slate-800 bg-slate-950/40 text-slate-300 hover:border-indigo-500/50 hover:bg-indigo-950/20 font-medium text-sm transition-all cursor-pointer leading-relaxed">
                             ${q.a}
                         </button>
-                        <button id="btn-${q.id}-b" onclick="selectAnswer(${q.id}, 'B', '${q.type}', ${index})" class="w-full text-left p-4 rounded-xl border-2 border-slate-100 hover:border-purple-200 hover:bg-purple-50/50 transition-all font-medium text-slate-700 cursor-pointer">
+                        <button id="opt-${q.id}-b" onclick="handleSelect(${q.id}, 'B', '${q.group}')" class="w-full text-left p-4 rounded-xl border border-slate-800 bg-slate-950/40 text-slate-300 hover:border-indigo-500/50 hover:bg-indigo-950/20 font-medium text-sm transition-all cursor-pointer leading-relaxed">
                             ${q.b}
                         </button>
                     </div>
@@ -168,110 +313,161 @@
             });
         }
 
-        // 답변 선택 핸들러
-        function selectAnswer(qId, typeValue, mbtiType, currentIndex) {
-            // 답변 데이터 저장
-            answers[qId] = { choice: typeValue, type: mbtiType };
+        // 특정 옵션 선택 처리 알고리즘
+        function handleSelect(qId, choice, group) {
+            currentAnswers[qId] = { choice, group };
 
-            // UI 선택 처리 (버튼 색상 토글)
-            const btnA = document.getElementById(`btn-${qId}-a`);
-            const btnB = document.getElementById(`btn-${qId}-b`);
-            const card = document.getElementById(`q-card-${qId}`);
+            const btnA = document.getElementById(`opt-${qId}-a`);
+            const btnB = document.getElementById(`opt-${qId}-b`);
+            const card = document.getElementById(`q-block-${qId}`);
 
-            if (typeValue === 'A') {
-                btnA.className = "w-full text-left p-4 rounded-xl border-2 border-purple-500 bg-purple-50 font-bold text-purple-700 cursor-pointer transition-all";
-                btnB.className = "w-full text-left p-4 rounded-xl border-2 border-slate-100 font-medium text-slate-400 cursor-pointer opacity-60 transition-all";
+            // 활성화/비활성화 스타일 가이드 스위칭
+            if (choice === 'A') {
+                btnA.className = "w-full text-left p-4 rounded-xl border-2 border-indigo-500 bg-indigo-950/40 text-indigo-300 font-bold text-sm transition-all cursor-pointer leading-relaxed shadow-lg shadow-indigo-950/50";
+                btnB.className = "w-full text-left p-4 rounded-xl border border-slate-800/50 bg-slate-950/10 text-slate-600 font-medium text-sm transition-all cursor-pointer leading-relaxed opacity-40";
             } else {
-                btnB.className = "w-full text-left p-4 rounded-xl border-2 border-purple-500 bg-purple-50 font-bold text-purple-700 cursor-pointer transition-all";
-                btnA.className = "w-full text-left p-4 rounded-xl border-2 border-slate-100 font-medium text-slate-400 cursor-pointer opacity-60 transition-all";
+                btnB.className = "w-full text-left p-4 rounded-xl border-2 border-indigo-500 bg-indigo-950/40 text-indigo-300 font-bold text-sm transition-all cursor-pointer leading-relaxed shadow-lg shadow-indigo-950/50";
+                btnA.className = "w-full text-left p-4 rounded-xl border border-slate-800/50 bg-slate-950/10 text-slate-600 font-medium text-sm transition-all cursor-pointer leading-relaxed opacity-40";
             }
 
-            // 선택 완료된 카드는 부드럽게 시각적 처리 활성화
-            card.classList.remove('border-slate-100', 'shadow-sm');
-            card.classList.add('border-purple-100', 'shadow-md');
+            // 완료 카드 강조 피드백
+            card.className = "bg-slate-900 border border-indigo-900/40 p-6 rounded-2xl shadow-2xl transition-all duration-300";
 
-            // 상단 프로그레스 바 업데이트
-            updateProgress();
+            // 상단 진행 상태 게이지 동기화
+            refreshGauge();
 
-            // 🔥 재미있는 포인트: 선택하면 다음 질문 카드로 부드럽게 자동 스크롤 다운
-            const nextCard = document.getElementById(`q-card-${qId + 1}`);
-            if (nextCard) {
+            // 부드러운 자동 뷰포트 이동 타겟팅
+            const nextBlock = document.getElementById(`q-block-${qId + 1}`);
+            if (nextBlock) {
                 setTimeout(() => {
-                    nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 200);
+                    nextBlock.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 180);
             } else {
-                // 마지막 문항일 때 제출 버튼으로 스크롤
                 setTimeout(() => {
-                    document.getElementById('submit-btn').scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }, 200);
+                    document.getElementById('calc-btn').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 180);
             }
         }
 
-        // 진행률 게이지 및 버튼 활성화 업데이트
-        function updateProgress() {
-            const answeredCount = Object.keys(answers).length;
-            const progressPercent = (answeredCount / 32) * 100;
-            
-            document.getElementById('progress-bar').style.width = `${progressPercent}%`;
-            document.getElementById('progress-text').innerText = `${answeredCount} / 32`;
+        // 실시간 게이지 업데이트
+        function refreshGauge() {
+            const answeredTotal = Object.keys(currentAnswers).length;
+            const percentage = (answeredTotal / 32) * 100;
 
-            const submitBtn = document.getElementById('submit-btn');
-            if (answeredCount === 32) {
-                submitBtn.disabled = false;
-                submitBtn.innerText = "결과 확인하러 가기 🔮";
-                submitBtn.className = "w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-4 rounded-2xl text-xl cursor-pointer shadow-lg transform hover:-translate-y-1 active:translate-y-0 transition-all";
+            document.getElementById('gauge-bar').style.width = `${percentage}%`;
+            document.getElementById('gauge-text').innerText = `${answeredTotal} / 32`;
+
+            const calcBtn = document.getElementById('calc-btn');
+            if (answeredTotal === 32) {
+                calcBtn.disabled = false;
+                calcBtn.innerText = "정밀 심층 진단 리포트 생성 완료 🔓";
+                calcBtn.className = "w-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-slate-950 font-black py-4 rounded-2xl text-xl cursor-pointer shadow-2xl shadow-purple-900/30 hover:scale-[1.01] active:scale-[0.99] transition-all";
             }
         }
 
-        // MBTI 결과 계산 및 노출
-        function calculateResult() {
+        // 결과 정밀 산출 및 다차원 대시보드 조립
+        function buildAdvancedReport() {
+            // 각 차원별 스코어 계산 스토리지 (각 그룹당 최대 8점)
             let scores = { EI: 0, SN: 0, TF: 0, JP: 0 };
 
-            // 각 문항 점수 계산 (A 선택 시 각 성향의 앞 글자 가점)
-            Object.keys(answers).forEach(key => {
-                const item = answers[key];
-                if (item.choice === 'A') {
-                    scores[item.type]++;
+            Object.keys(currentAnswers).forEach(id => {
+                const data = currentAnswers[id];
+                if (data.choice === 'A') {
+                    scores[data.group]++;
                 }
             });
 
-            // 8문항 중 4문항 초과로 선택되었는지 여부 확인하여 판별
-            let mbti = "";
-            mbti += (scores.EI >= 4) ? "E" : "I";
-            mbti += (scores.SN >= 4) ? "S" : "N";
-            mbti += (scores.TF >= 4) ? "T" : "F";
-            mbti += (scores.JP >= 4) ? "J" : "P";
+            // 스코어링 백분율 변환 데이터 모델링
+            const scoresPct = {
+                E: Math.round((scores.EI / 8) * 100),
+                I: 100 - Math.round((scores.EI / 8) * 100),
+                S: Math.round((scores.SN / 8) * 100),
+                N: 100 - Math.round((scores.SN / 8) * 100),
+                T: Math.round((scores.TF / 8) * 100),
+                F: 100 - Math.round((scores.TF / 8) * 100),
+                J: Math.round((scores.JP / 8) * 100),
+                P: 100 - Math.round((scores.JP / 8) * 100),
+            };
 
-            // 결과 바인딩
-            const resultData = mbtiResults[mbti];
-            document.getElementById('result-mbti').innerText = mbti;
-            document.getElementById('result-emoji').innerText = resultData.emoji;
-            document.getElementById('result-title').innerText = resultData.title;
-            document.getElementById('result-desc').innerText = resultData.desc;
+            // 유형 확정 알고리즘
+            let mbtiResult = "";
+            mbtiResult += (scoresPct.E >= 50) ? "E" : "I";
+            mbtiResult += (scoresPct.S >= 50) ? "S" : "N";
+            mbtiResult += (scoresPct.T >= 50) ? "T" : "F";
+            mbtiResult += (scoresPct.J >= 50) ? "J" : "P";
 
-            // 화면 전환
-            document.getElementById('quiz-section').classList.add('hidden');
-            document.getElementById('result-section').classList.remove('hidden');
+            const payload = masterDatabase[mbtiResult];
+
+            // 리포트 텍스트 및 정보 바인딩
+            document.getElementById('rep-type').innerText = mbtiResult;
+            document.getElementById('rep-emoji').innerText = payload.emoji;
+            document.getElementById('rep-title').innerText = payload.title;
+            document.getElementById('rep-feature').innerText = payload.feature;
+            document.getElementById('rep-growth').innerText = payload.growth;
+
+            // 장단점 리스트 클리어 및 삽입
+            const prosContainer = document.getElementById('rep-pros');
+            const consContainer = document.getElementById('rep-cons');
+            prosContainer.innerHTML = '';
+            consContainer.innerHTML = '';
+
+            payload.pros.forEach(p => { prosContainer.innerHTML += `<li>${p}</li>`; });
+            payload.cons.forEach(c => { consContainer.innerHTML += `<li>${c}</li>`; });
+
+            // 4대 성향 데이터 대시보드 게이지 드로잉
+            buildSpectrumDashboard(scoresPct);
+
+            // 스크린 교체 및 화면 복귀
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('report-screen').classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // 다시 테스트하기 함수
-        function restartQuiz() {
-            // 답변 데이터 초기화
-            Object.keys(answers).forEach(key => delete answers[key]);
+        // 수치 스펙트럼 대시보드 컴포넌트 생성기
+        function buildSpectrumDashboard(pct) {
+            const dashboard = document.getElementById('spectrum-dashboard');
             
-            // UI 초기화
-            document.getElementById('result-section').classList.add('hidden');
-            document.getElementById('intro-section').classList.remove('hidden');
+            const dimensions = [
+                { leftLab: "외향성 (E)", leftVal: pct.E, rightLab: "(I) 내향성", rightVal: pct.I, color: "from-amber-500 to-orange-500" },
+                { leftLab: "감각주의 (S)", leftVal: pct.S, rightLab: "(N) 직관주의", rightVal: pct.N, color: "from-emerald-500 to-teal-500" },
+                { leftLab: "이성사고 (T)", leftVal: pct.T, rightLab: "(F) 감정공감", rightVal: pct.F, color: "from-blue-500 to-indigo-500" },
+                { leftLab: "계획조직 (J)", leftVal: pct.J, rightLab: "(P) 자율즉흥", rightVal: pct.P, color: "from-purple-500 to-pink-500" }
+            ];
+
+            dashboard.innerHTML = '';
+
+            dimensions.forEach(dim => {
+                const row = document.createElement('div');
+                row.className = "space-y-1.5";
+                row.innerHTML = `
+                    <div class="flex justify-between text-xs font-bold text-slate-400">
+                        <span>${dim.leftLab} <span class="text-slate-200 ml-1">${dim.leftVal}%</span></span>
+                        <span><span class="text-slate-200 mr-1">${dim.rightVal}%</span> ${dim.rightLab}</span>
+                    </div>
+                    <div class="w-full bg-slate-800 h-3 rounded-full overflow-hidden flex">
+                        <div class="bg-gradient-to-r ${dim.color} h-full transition-all duration-1000" style="width: ${dim.leftVal}%"></div>
+                        <div class="bg-slate-700 h-full flex-1"></div>
+                    </div>
+                `;
+                dashboard.appendChild(row);
+            });
+        }
+
+        // 플랫폼 완전히 초기화
+        function resetPlatform() {
+            Object.keys(currentAnswers).forEach(key => delete currentAnswers[key]);
+            document.getElementById('report-screen').classList.add('hidden');
+            document.getElementById('intro-screen').classList.remove('hidden');
             
-            const submitBtn = document.getElementById('submit-btn');
-            submitBtn.disabled = true;
-            submitBtn.innerText = "모든 질문에 답변해주세요 🔒";
-            submitBtn.className = "w-full bg-slate-300 text-slate-500 font-bold py-4 rounded-2xl text-xl cursor-not-allowed transition-all";
-            
-            document.getElementById('progress-bar').style.width = '0%';
-            document.getElementById('progress-text').innerText = "0 / 32";
-            
+            // 게이지 초기화
+            document.getElementById('gauge-bar').style.width = '0%';
+            document.getElementById('gauge-text').innerText = "0 / 32";
+
+            const calcBtn = document.getElementById('calc-btn');
+            calcBtn.disabled = true;
+            calcBtn.innerText = "모든 문항에 체크하면 분석서가 오픈됩니다 🔒";
+            calcBtn.className = "w-full bg-slate-800 text-slate-500 font-bold py-4 rounded-2xl text-lg cursor-not-allowed transition-all border border-slate-700/50";
+
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     </script>
