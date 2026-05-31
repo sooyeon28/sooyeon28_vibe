@@ -3,196 +3,276 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>심층 MBTI 성격 유형 정밀 진단</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <title>⚡ 초간단 스크롤 MBTI 테스트</title>
+    <!-- Tailwind CSS (디자인을 예쁘고 트렌디하게 만들어줍니다) -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@300;400;600;700&display=swap');
-        body { font-family: 'Pretendard', sans-serif; background-color: #f3f4f6; color: #1f2937; }
-        .glass { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
-        .progress-glow { box-shadow: 0 0 15px rgba(99, 102, 241, 0.4); }
-        .type-badge { @apply px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider; }
+        /* 부드러운 스크롤 효과 */
+        html { scroll-behavior: smooth; }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
     </style>
 </head>
-<body class="antialiased">
+<body class="bg-slate-50 text-slate-800 font-sans antialiased">
 
-    <div id="start-screen" class="min-h-screen flex flex-col items-center justify-center p-6 text-center">
-        <div class="animate__animated animate__fadeInDown">
-            <span class="bg-indigo-100 text-indigo-600 px-4 py-1.5 rounded-full text-sm font-bold mb-4 inline-block">Professional Ver. 2.0</span>
-            <h1 class="text-5xl font-black mb-6 text-slate-900 leading-tight">나를 정의하는<br><span class="text-indigo-600">가장 완벽한 32가지 질문</span></h1>
-            <p class="text-lg text-slate-500 mb-10 max-w-sm mx-auto">본 검사는 심리학적 성격 유형론을 바탕으로 설계되었습니다. 평소 자신의 모습에 더 가까운 답변을 선택하세요.</p>
-            <button onclick="startQuiz()" class="px-12 py-5 bg-indigo-600 text-white rounded-2xl font-bold text-xl shadow-2xl hover:bg-indigo-700 transform hover:-translate-y-1 transition-all">
-                검사 시작하기
+    <!-- 1. 시작 화면 (Intro) -->
+    <section id="intro-section" class="min-h-screen flex flex-col justify-center items-center text-center p-6 gradient-bg text-white">
+        <div class="max-w-md bg-white/10 backdrop-blur-md p-8 rounded-3xl shadow-2xl border border-white/20 animate-fade-in">
+            <span class="text-6xl mb-4 block animate-bounce">✨</span>
+            <h1 class="text-4xl font-extrabold mb-4 tracking-tight">나의 진짜 성향은?</h1>
+            <p class="text-lg text-purple-100 mb-8 font-light">딱 32개의 문항으로 쉽고 빠르게 알아보는 스크롤 MBTI 퀴즈!</p>
+            <button onclick="startQuiz()" class="w-full bg-white text-purple-700 font-bold py-4 px-8 rounded-2xl shadow-lg hover:bg-purple-50 transition-all transform hover:-translate-y-1 active:translate-y-0 text-xl cursor-pointer">
+                테스트 시작하기 🚀
             </button>
         </div>
-    </div>
+    </section>
 
-    <div id="quiz-screen" class="hidden min-h-screen p-6 flex flex-col items-center">
-        <div class="w-full max-w-2xl sticky top-4 z-10 mb-8">
-            <div class="flex justify-between items-end mb-2">
-                <span id="progress-text" class="text-indigo-600 font-bold text-2xl">01 <span class="text-slate-300 text-lg">/ 32</span></span>
-                <span id="percent-text" class="text-slate-400 font-medium">0% 완료</span>
+    <!-- 2. 퀴즈 문항 영역 -->
+    <main id="quiz-section" class="hidden max-w-2xl mx-auto px-4 py-12 space-y-8">
+        <!-- 진행률 표시 바 -->
+        <div class="sticky top-4 bg-white/80 backdrop-blur-md p-4 rounded-2xl shadow-md border border-slate-100 z-50 flex items-center justify-between">
+            <div class="w-full bg-slate-200 rounded-full h-3.5 dark:bg-slate-700 mr-4">
+                <div id="progress-bar" class="bg-purple-600 h-3.5 rounded-full transition-all duration-300" style="width: 0%"></div>
             </div>
-            <div class="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
-                <div id="progress-bar" class="bg-indigo-600 h-full transition-all duration-500 progress-glow" style="width: 0%"></div>
-            </div>
+            <span id="progress-text" class="text-sm font-bold text-purple-700 whitespace-nowrap">0 / 32</span>
         </div>
 
-        <div id="question-container" class="w-full max-w-2xl bg-white rounded-[2.5rem] p-10 shadow-xl border border-slate-100 animate__animated animate__fadeInUp">
-            <h2 id="question-text" class="text-2xl font-bold mb-10 leading-snug text-slate-800 min-h-[80px]">가져오는 중...</h2>
-            <div class="grid gap-4">
-                <button onclick="handleAnswer(1)" class="group relative w-full p-6 text-left border-2 border-slate-100 rounded-2xl hover:border-indigo-500 hover:bg-indigo-50 transition-all duration-200">
-                    <span id="ans-1" class="text-lg font-medium text-slate-700 group-hover:text-indigo-700"></span>
-                </button>
-                <button onclick="handleAnswer(0)" class="group relative w-full p-6 text-left border-2 border-slate-100 rounded-2xl hover:border-indigo-500 hover:bg-indigo-50 transition-all duration-200">
-                    <span id="ans-2" class="text-lg font-medium text-slate-700 group-hover:text-indigo-700"></span>
-                </button>
-            </div>
-        </div>
-    </div>
+        <!-- 32개 문항이 자바스크립트로 이곳에 동적 생성됩니다 -->
+        <div id="questions-container" class="space-y-6"></div>
 
-    <div id="result-screen" class="hidden w-full max-w-4xl mx-auto p-6 py-12 animate__animated animate__fadeIn">
-        <div class="text-center mb-12">
-            <h3 class="text-indigo-600 font-bold mb-2">검사 결과 리포트</h3>
-            <div id="res-mbti" class="text-7xl font-black tracking-tighter text-slate-900 mb-4 italic"></div>
-            <div id="res-emoji" class="text-6xl mb-6"></div>
-            <h4 id="res-title" class="text-2xl font-bold text-slate-800"></h4>
+        <!-- 결과 확인 버튼 -->
+        <div class="text-center pt-8">
+            <button id="submit-btn" onclick="calculateResult()" disabled class="w-full bg-slate-300 text-slate-500 font-bold py-4 rounded-2xl text-xl cursor-not-allowed transition-all">
+                모든 질문에 답변해주세요 🔒
+            </button>
         </div>
+    </main>
 
-        <div class="grid md:grid-cols-2 gap-6 mb-8">
-            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
-                <h5 class="text-indigo-600 font-bold mb-4 flex items-center">
-                    <span class="mr-2">💡</span> 핵심 특징
-                </h5>
-                <ul id="res-features" class="space-y-3 text-slate-600 leading-relaxed"></ul>
-            </div>
-            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
-                <h5 class="text-emerald-600 font-bold mb-4 flex items-center">
-                    <span class="mr-2">✅</span> 장점 (Strength)
-                </h5>
-                <ul id="res-pros" class="space-y-3 text-slate-600 leading-relaxed"></ul>
-            </div>
-            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
-                <h5 class="text-rose-600 font-bold mb-4 flex items-center">
-                    <span class="mr-2">⚠️</span> 단점 (Weakness)
-                </h5>
-                <ul id="res-cons" class="space-y-3 text-slate-600 leading-relaxed"></ul>
-            </div>
-            <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
-                <h5 class="text-amber-600 font-bold mb-4 flex items-center">
-                    <span class="mr-2">🚀</span> 성장 보완점
-                </h5>
-                <ul id="res-advice" class="space-y-3 text-slate-600 leading-relaxed"></ul>
-            </div>
+    <!-- 3. 결과 화면 영역 -->
+    <section id="result-section" class="hidden min-h-screen flex flex-col justify-center items-center p-6 bg-slate-900 text-white">
+        <div class="max-w-md w-full bg-slate-800 border border-slate-700 p-8 rounded-3xl shadow-2xl text-center">
+            <span class="text-sm font-bold tracking-widest text-purple-400 uppercase">당신의 MBTI 결과는?</span>
+            <h2 id="result-mbti" class="text-6xl font-black my-4 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">ENFP</h2>
+            <div id="result-emoji" class="text-8xl my-6 animate-pulse">🎉</div>
+            <h3 id="result-title" class="text-2xl font-bold mb-4">재기발랄한 활동가</h3>
+            <p id="result-desc" class="text-slate-300 leading-relaxed mb-8">자유로운 영혼의 소유자이며, 열정적이고 창의적인 성격입니다.</p>
+            
+            <button onclick="restartQuiz()" class="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-4 rounded-2xl shadow-lg hover:opacity-90 transition-all cursor-pointer">
+                다시 테스트하기 🔄
+            </button>
         </div>
+    </section>
 
-        <div class="text-center">
-            <button onclick="location.reload()" class="px-8 py-3 bg-slate-800 text-white rounded-xl font-bold hover:bg-slate-900 transition">테스트 다시하기</button>
-        </div>
-    </div>
-
+    <!-- 🧠 자바스크립트 로직 -->
     <script>
-        // 32문항 데이터 (핵심 문항 구성)
+        // 32개 MBTI 질문 데이터 (E/I, S/N, T/F, J/P 각 8문항씩)
         const questions = [
-            { q: "새로운 사람들과의 모임에서 나는 주로?", a1: "먼저 다가가 대화를 주도한다", a2: "조용히 경청하며 상황을 살핀다", type: "E" },
-            { q: "프로젝트를 시작할 때 나는?", a1: "전체적인 개념과 가능성을 먼저 본다", a2: "구체적인 사실과 세부 실행 계획을 먼저 본다", type: "N" },
-            { q: "결정을 내릴 때 더 중요하게 생각하는 것은?", a1: "논리적인 타당성과 객관적 근거", a2: "주변 사람들의 감정과 관계의 조화", type: "T" },
-            { q: "마감 기한이 정해진 업무를 할 때?", a1: "미리미리 계획을 세워 여유 있게 끝낸다", a2: "막판에 집중력을 발휘하여 몰아서 한다", type: "J" },
-            // ... (32개를 위해 각 지표별 8개씩 균등 배분하여 구현하는 로직)
+            // E vs I (1~8)
+            { id: 1, type: "EI", text: "주말에 집에 혼자 있으면 에너지가 방전된다.", a: "그렇다 (E)", b: "아니다, 충전된다 (I)" },
+            { id: 2, type: "EI", text: "새로운 사람들과 만나는 자리가 즐겁고 설렌다.", a: "즐겁다 (E)", b: "기 빨린다 (I)" },
+            { id: 3, type: "EI", text: "생각을 말로 표현하는 게 글보다 편하다.", a: "말로 하기 (E)", b: "글로 쓰기 (I)" },
+            { id: 4, type: "EI", text: "화가 나거나 슬플 때 사람들과 대화하며 푸는 편이다.", a: "대화하기 (E)", b: "혼자 삭히기 (I)" },
+            { id: 5, type: "EI", text: "단톡방에서 나는 주로 대화를 주도하는 편이다.", a: "주도파 (E)", b: "눈팅/리액션파 (I)" },
+            { id: 6, text: "여러 친구들과 왁자지껄 노는 게 더 좋다.", type: "EI", a: "단체 모임 (E)", b: "소수 정예 (I)" },
+            { id: 7, text: "처음 보는 사람에게 말을 먼저 거는 것이 어렵지 않다.", type: "EI", a: "쉬움 (E)", b: "어려움 (I)" },
+            { id: 8, text: "내 일상이나 셀카를 SNS에 공유하는 걸 좋아한다.", type: "EI", a: "좋아함 (E)", b: "부담스러움 (I)" },
+
+            // S vs N (9~16)
+            { id: 9, type: "SN", text: "사과를 보면 드는 생각은?", a: "맛있겠다, 빨갛다 (S)", b: "스티브 잡스, 백설공주, 뉴턴 (N)" },
+            { id: 10, type: "SN", text: "영화를 볼 때 나는 주로 어느 것에 집중하는가?", a: "화려한 액션과 영상미 (S)", b: "숨겨진 복선과 세계관 (N)" },
+            { id: 11, type: "SN", text: "노래를 들을 때 더 먼저 꽂히는 것은?", a: "신나는 멜로디와 비트 (S)", b: "마음을 울리는 가사 (N)" },
+            { id: 12, type: "SN", text: "만약 '내가 내일 로또에 당첨된다면?' 이라는 상상을 자주 하나요?", a: "현실적인 계획만 세움 (S)", b: "이미 건물 몇 채 샀음 (N)" },
+            { id: 13, type: "SN", text: "설명서를 읽을 때 나는?", a: "처음부터 꼼꼼히 정독 (S)", b: "대충 직관적으로 조립 시작 (N)" },
+            { id: 14, type: "SN", text: "이야기를 할 때 나는 어떤 편인가요?", a: "사실 위주로 정확하게 (S)", b: "비유와 은유를 섞어서 (N)" },
+            { id: 15, type: "SN", text: "멍 때릴 때 내 머릿속은?", a: "진짜 아무 생각 없음 (S)", b: "끝없는 꼬리물기 상상 중 (N)" },
+            { id: 16, type: "SN", text: "미래의 일보다 지금 현재 눈앞의 일이 더 중요하다.", a: "현재 충실 (S)", b: "미래 대비 (N)" },
+
+            // T vs F (17~24)
+            { id: 17, type: "TF", text: "친구가 '나 슬퍼서 빵 샀어'라고 했을 때 내 반응은?", a: "무슨 빵 샀는데? 왜 슬퍼? (T)", b: "왜 슬펐어 ㅠㅠ 괜찮아? (F)" },
+            { id: 18, type: "TF", text: "친구가 고민을 털어놓을 때 내가 먼저 하는 행동은?", a: "현실적인 해결책 제시 (T)", b: "적극적인 감정 공감 (F)" },
+            { id: 19, type: "TF", text: "상처를 더 크게 받는 말은 어떤 쪽인가요?", a: "너 일을 왜 그렇게 해? (능력 비판) (T)", b: "너랑은 말이 안 통해 (관계 비판) (F)" },
+            { id: 20, type: "TF", text: "영화나 드라마를 보면서 눈물을 자주 흘리나요?", a: "거의 안 흘림 감정이입 안 됨 (T)", b: "툭하면 폭풍 눈물 (F)" },
+            { id: 21, type: "TF", text: "타인의 부탁을 거절할 때 내 마음은?", a: "안 되면 안 되는 거지, 단호함 (T)", b: "거절하고 나서 계속 신경 쓰임 (F)" },
+            { id: 22, type: "TF", text: "칭찬을 들을 때 더 기분 좋은 말은?", a: "너 진짜 똑똑하다, 일 잘한다 (T)", b: "너랑 있으면 마음이 편해져 (F)" },
+            { id: 23, type: "TF", text: "조별 과제 잔혹사! 참여 안 하는 조원을 만났을 때?", a: "단호하게 이름 빼고 교수님께 찌름 (T)", b: "마음 쓰이지만 좋게 말해봄 (F)" },
+            { id: 24, type: "TF", text: "논쟁이 생겼을 때 나는?", a: "시시비비를 가려 이겨야 함 (T)", b: "갈등이 생기는 것 자체가 불편함 (F)" },
+
+            // J vs P (25~32)
+            { id: 25, type: "JP", text: "여행을 갈 때 나의 계획표 상태는?", a: "몇 시에 어디 갈지 분 단위로 짬 (J)", b: "비행기 표랑 숙소만 있으면 끝 (P)" },
+            { id: 26, type: "JP", text: "갑작스러운 약속이나 스케줄 변경이 생긴다면?", a: "계획이 꼬여서 스트레스 받음 (J)", b: "오히려 좋아! 번개 환영 (P)" },
+            { id: 27, type: "JP", text: "과제나 업무를 처리할 때 내 스타일은?", a: "미리미리 계획 세워서 여유 있게 (J)", b: "마감 직전 초인적인 벼락치기 (P)" },
+            { id: 28, type: "JP", text: "내 방이나 책상 위 물건들의 정돈 상태는?", a: "항상 제자리에 정돈되어 있음 (J)", b: "지저분해 보이지만 나만의 규칙이 있음 (P)" },
+            { id: 29, type: "JP", text: "하루 일과를 시작하기 전 리스트를 작성하나요?", a: "To-Do 리스트 필수 (J)", b: "머릿속으로 대충 생각하거나 안 함 (P)" },
+            { id: 30, type: "JP", text: "음식점에 갈 때 나는 주로?", a: "미리 맛집 웨이팅, 메뉴 정보 다 찾아둠 (J)", b: "지나가다 느낌 오는 곳으로 들어감 (P)" },
+            { id: 31, type: "JP", text: "약속 시간에 늦는 사람을 보면 드는 생각은?", a: "시간 약속은 기본인데 기본이 안 됐군 (J)", b: "차가 막혔나 보지 그럴 수 있지 (P)" },
+            { id: 32, type: "JP", text: "준비가 완벽하게 되지 않은 상태에서 무언가를 시작하면 불안하다.", a: "매우 불안함 (J)", b: "부딪히면서 배우는 거지 (P)" }
         ];
 
-        // 확장 로직을 위해 32문항 더미 데이터 생성 (실제 질문으로 교체 가능)
-        const indicators = ["E", "N", "T", "J"];
-        const fullQuestions = [];
-        for(let i=0; i<32; i++) {
-            const type = indicators[i % 4];
-            fullQuestions.push({
-                q: `[Q${i+1}] 특정 상황에서 당신은 어떤 방식을 더 선호하시나요?`,
-                a1: `${type} 성향에 가까운 행동 양식 선택`,
-                a2: `${type === 'E'?'I':type === 'N'?'S':type === 'T'?'F':'P'} 성향에 가까운 행동 양식 선택`,
-                type: type
+        // MBTI 결과 매핑 데이터 (이모지와 타이틀)
+        const mbtiResults = {
+            ISTJ: { emoji: "💼", title: "청렴결백한 논리주의자", desc: "매우 현실적이고 철두철미하며, 맡은 바 책임을 다하는 꼼꼼한 성격입니다." },
+            ISFJ: { emoji: "🛡️", title: "용감한 수호자", desc: "주변 사람들을 따뜻하게 보살피고 헌신하며, 의리가 넘치는 성격입니다." },
+            INFJ: { emoji: "🔮", title: "선의의 옹호자", desc: "이상주의적이고 신비로우며, 타인에게 영감을 주는 깊은 통찰력을 가졌습니다." },
+            INTJ: { emoji: "🧠", title: "용의주도한 전략가", desc: "상상력이 풍부하면서도 결단력이 있으며, 야망 있는 독립적인 사색가입니다." },
+            ISTP: { emoji: "🛠️", title: "만능 재주꾼", desc: "냉철한 이성과 왕성한 호기심을 바탕으로 무언가를 탐구하고 만드는 걸 좋아합니다." },
+            ISFP: { emoji: "🎨", title: "호기심 많은 예술가", desc: "항상 새로운 것을 찾아 도전하는 열정적이고 온화한 예술가 타입입니다." },
+            INFP: { emoji: "🦄", title: "열정적인 중재자", desc: "최악의 상황에서도 긍정적인 면을 찾는, 상냥하고 이타적인 낭만주의자입니다." },
+            INTP: { emoji: "🧪", title: "논리적인 사색가", desc: "끊임없이 새로운 지식을 갈구하며, 독창성과 아이디어가 넘치는 탐구가입니다." },
+            ESTP: { emoji: "🏍️", title: "수완 좋은 활동가", desc: "직관과 스릴을 즐기며, 당당하고 위트 있게 문제를 해결하는 에너자이저입니다." },
+            ESFP: { emoji: "🎉", title: "자유로운 영혼의 연예인", desc: "주변에 사람이 끊이지 않으며, 인생을 즐겁고 활기차게 살아가는 분위기 메이커입니다." },
+            ENFP: { emoji: "🎈", title: "재기발랄한 활동가", desc: "자유로운 영혼의 소유자이며, 열정적이고 창의적인 성격으로 늘 웃음을 줍니다." },
+            ENTP: { emoji: "🔥", title: "뜨거운 논쟁을 즐기는 변론가", desc: "지적인 도전을 두려워하지 않으며, 늘 새로운 아이디어를 제시하는 브레인입니다." },
+            ESTJ: { emoji: "📐", title: "엄격한 관리자", desc: "사물과 사람을 조직하고 관리하는 데 타의 추종을 불허하는 뛰어난 리더입니다." },
+            ESFJ: { emoji: "🤝", title: "사교적인 외교관", desc: "타인을 돕는 일에 적극적이며, 인기가 많고 사교성이 매우 좋은 따뜻한 성격입니다." },
+            ENFJ: { emoji: "🗣️", title: "정의로운 천생 리더", desc: "카리스마와 열정을 지닌 리더로, 청중을 사로잡고 타인을 긍정적인 길로 인도합니다." },
+            ENTJ: { emoji: "👑", title: "대담한 통솔자", desc: "대담하고 상상력이 풍부하며, 강한 의지로 목표를 성취해 내는 타고난 리더입니다." }
+        };
+
+        const answers = {};
+
+        // 퀴즈 시작 함수
+        function startQuiz() {
+            document.getElementById('intro-section').classList.add('hidden');
+            document.getElementById('quiz-section').classList.remove('hidden');
+            renderQuestions();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // 질문 카드 동적 화면 렌더링
+        function renderQuestions() {
+            const container = document.getElementById('questions-container');
+            container.innerHTML = '';
+
+            questions.forEach((q, index) => {
+                const card = document.createElement('div');
+                card.id = `q-card-${q.id}`;
+                // 세련된 카드 스타일
+                card.className = "bg-white p-6 rounded-2xl shadow-sm border border-slate-100 transition-all duration-300";
+                
+                card.innerHTML = `
+                    <div class="flex items-center space-x-2 mb-4">
+                        <span class="bg-purple-100 text-purple-700 text-xs font-bold px-2.5 py-1 rounded-full">Q ${q.id}</span>
+                    </div>
+                    <p class="text-lg font-bold text-slate-800 mb-6">${q.text}</p>
+                    <div class="space-y-3">
+                        <button id="btn-${q.id}-a" onclick="selectAnswer(${q.id}, 'A', '${q.type}', ${index})" class="w-full text-left p-4 rounded-xl border-2 border-slate-100 hover:border-purple-200 hover:bg-purple-50/50 transition-all font-medium text-slate-700 cursor-pointer">
+                            ${q.a}
+                        </button>
+                        <button id="btn-${q.id}-b" onclick="selectAnswer(${q.id}, 'B', '${q.type}', ${index})" class="w-full text-left p-4 rounded-xl border-2 border-slate-100 hover:border-purple-200 hover:bg-purple-50/50 transition-all font-medium text-slate-700 cursor-pointer">
+                            ${q.b}
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
             });
         }
 
-        // 결과 상세 데이터베이스 (일부 발췌 - 16종 모두 구현 가능)
-        const db = {
-            "ENTJ": {
-                title: "대담한 통솔자", emoji: "🤴",
-                features: ["비전을 제시하고 팀을 이끎", "효율성을 극대화하는 시스템 구축", "어려운 도전을 즐기는 스타일"],
-                pros: ["강력한 의지와 추진력", "전략적인 사고 능력", "자신감 넘치는 카리스마"],
-                cons: ["타인의 감정에 무심할 수 있음", "지나치게 비판적이고 오만해 보임", "참을성이 부족함"],
-                advice: ["타인의 감정에 공감하는 연습이 필요함", "가끔은 속도를 늦추고 세부사항을 점검하세요"]
-            },
-            "INFP": {
-                title: "열정적인 중재자", emoji: "🧚",
-                features: ["자신만의 가치관이 뚜렷함", "공감 능력이 매우 뛰어남", "창의적이고 예술적인 기질"],
-                pros: ["이타적이고 따뜻한 마음", "개방적인 사고방식", "높은 수준의 통찰력"],
-                cons: ["지나치게 이상적이라 현실 적응이 힘듦", "비판에 매우 민감하게 반응함", "실무적인 세부사항에 약함"],
-                advice: ["현실적인 마감 기한을 지키는 습관이 필요함", "모든 사람을 만족시킬 수 없음을 인정하세요"]
-            }
-            // ... 나머지 유형도 동일한 구조로 데이터 추가
-        };
+        // 답변 선택 핸들러
+        function selectAnswer(qId, typeValue, mbtiType, currentIndex) {
+            // 답변 데이터 저장
+            answers[qId] = { choice: typeValue, type: mbtiType };
 
-        let currentIdx = 0;
-        let score = { E:0, I:0, N:0, S:0, T:0, F:0, J:0, P:0 };
+            // UI 선택 처리 (버튼 색상 토글)
+            const btnA = document.getElementById(`btn-${qId}-a`);
+            const btnB = document.getElementById(`btn-${qId}-b`);
+            const card = document.getElementById(`q-card-${qId}`);
 
-        function startQuiz() {
-            document.getElementById('start-screen').classList.add('hidden');
-            document.getElementById('quiz-screen').classList.remove('hidden');
-            updateQuestion();
-        }
-
-        function updateQuestion() {
-            const q = fullQuestions[currentIdx];
-            document.getElementById('question-text').innerText = q.q;
-            document.getElementById('ans-1').innerText = q.a1;
-            document.getElementById('ans-2').innerText = q.a2;
-            
-            const prog = ((currentIdx + 1) / 32) * 100;
-            document.getElementById('progress-bar').style.width = `${prog}%`;
-            document.getElementById('progress-text').innerHTML = `${String(currentIdx+1).padStart(2,'0')} <span class="text-slate-300 text-lg">/ 32</span>`;
-            document.getElementById('percent-text').innerText = `${Math.round(prog)}% 완료`;
-        }
-
-        function handleAnswer(isA1) {
-            const q = fullQuestions[currentIdx];
-            const typeA = q.type;
-            const typeB = typeA === 'E'?'I':typeA === 'N'?'S':typeA === 'T'?'F':'P';
-            
-            if(isA1) score[typeA]++; else score[typeB]++;
-
-            if(currentIdx < 31) {
-                currentIdx++;
-                const container = document.getElementById('question-container');
-                container.classList.remove('animate__fadeInUp');
-                void container.offsetWidth;
-                container.classList.add('animate__fadeInUp');
-                updateQuestion();
+            if (typeValue === 'A') {
+                btnA.className = "w-full text-left p-4 rounded-xl border-2 border-purple-500 bg-purple-50 font-bold text-purple-700 cursor-pointer transition-all";
+                btnB.className = "w-full text-left p-4 rounded-xl border-2 border-slate-100 font-medium text-slate-400 cursor-pointer opacity-60 transition-all";
             } else {
-                showResult();
+                btnB.className = "w-full text-left p-4 rounded-xl border-2 border-purple-500 bg-purple-50 font-bold text-purple-700 cursor-pointer transition-all";
+                btnA.className = "w-full text-left p-4 rounded-xl border-2 border-slate-100 font-medium text-slate-400 cursor-pointer opacity-60 transition-all";
+            }
+
+            // 선택 완료된 카드는 부드럽게 시각적 처리 활성화
+            card.classList.remove('border-slate-100', 'shadow-sm');
+            card.classList.add('border-purple-100', 'shadow-md');
+
+            // 상단 프로그레스 바 업데이트
+            updateProgress();
+
+            // 🔥 재미있는 포인트: 선택하면 다음 질문 카드로 부드럽게 자동 스크롤 다운
+            const nextCard = document.getElementById(`q-card-${qId + 1}`);
+            if (nextCard) {
+                setTimeout(() => {
+                    nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 200);
+            } else {
+                // 마지막 문항일 때 제출 버튼으로 스크롤
+                setTimeout(() => {
+                    document.getElementById('submit-btn').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 200);
             }
         }
 
-        function showResult() {
-            document.getElementById('quiz-screen').classList.add('hidden');
-            document.getElementById('result-screen').classList.remove('hidden');
-            window.scrollTo(0, 0);
-
-            const mbti = (score.E >= score.I ? 'E':'I') + (score.N >= score.S ? 'N':'S') + (score.T >= score.F ? 'T':'F') + (score.J >= score.P ? 'J':'P');
-            const data = db[mbti] || db["ENTJ"]; // 예시 데이터
-
-            document.getElementById('res-mbti').innerText = mbti;
-            document.getElementById('res-emoji').innerText = data.emoji;
-            document.getElementById('res-title').innerText = data.title;
+        // 진행률 게이지 및 버튼 활성화 업데이트
+        function updateProgress() {
+            const answeredCount = Object.keys(answers).length;
+            const progressPercent = (answeredCount / 32) * 100;
             
-            const fillList = (id, items) => {
-                document.getElementById(id).innerHTML = items.map(i => `<li>• ${i}</li>`).join('');
-            };
+            document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+            document.getElementById('progress-text').innerText = `${answeredCount} / 32`;
 
-            fillList('res-features', data.features);
-            fillList('res-pros', data.pros);
-            fillList('res-cons', data.cons);
-            fillList('res-advice', data.advice);
+            const submitBtn = document.getElementById('submit-btn');
+            if (answeredCount === 32) {
+                submitBtn.disabled = false;
+                submitBtn.innerText = "결과 확인하러 가기 🔮";
+                submitBtn.className = "w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-4 rounded-2xl text-xl cursor-pointer shadow-lg transform hover:-translate-y-1 active:translate-y-0 transition-all";
+            }
+        }
+
+        // MBTI 결과 계산 및 노출
+        function calculateResult() {
+            let scores = { EI: 0, SN: 0, TF: 0, JP: 0 };
+
+            // 각 문항 점수 계산 (A 선택 시 각 성향의 앞 글자 가점)
+            Object.keys(answers).forEach(key => {
+                const item = answers[key];
+                if (item.choice === 'A') {
+                    scores[item.type]++;
+                }
+            });
+
+            // 8문항 중 4문항 초과로 선택되었는지 여부 확인하여 판별
+            let mbti = "";
+            mbti += (scores.EI >= 4) ? "E" : "I";
+            mbti += (scores.SN >= 4) ? "S" : "N";
+            mbti += (scores.TF >= 4) ? "T" : "F";
+            mbti += (scores.JP >= 4) ? "J" : "P";
+
+            // 결과 바인딩
+            const resultData = mbtiResults[mbti];
+            document.getElementById('result-mbti').innerText = mbti;
+            document.getElementById('result-emoji').innerText = resultData.emoji;
+            document.getElementById('result-title').innerText = resultData.title;
+            document.getElementById('result-desc').innerText = resultData.desc;
+
+            // 화면 전환
+            document.getElementById('quiz-section').classList.add('hidden');
+            document.getElementById('result-section').classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // 다시 테스트하기 함수
+        function restartQuiz() {
+            // 답변 데이터 초기화
+            Object.keys(answers).forEach(key => delete answers[key]);
+            
+            // UI 초기화
+            document.getElementById('result-section').classList.add('hidden');
+            document.getElementById('intro-section').classList.remove('hidden');
+            
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerText = "모든 질문에 답변해주세요 🔒";
+            submitBtn.className = "w-full bg-slate-300 text-slate-500 font-bold py-4 rounded-2xl text-xl cursor-not-allowed transition-all";
+            
+            document.getElementById('progress-bar').style.width = '0%';
+            document.getElementById('progress-text').innerText = "0 / 32";
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     </script>
 </body>
